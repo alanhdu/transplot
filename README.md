@@ -1,7 +1,7 @@
 transplot
 ====
 
-A (hopefully) nice plotting library.
+A (hopefully) nice plotting library. Essentially ggplot but with easy coordinate transforms and segregation of rendering.
 
 # Goals
 * **Intelligent:** It should be easy to make nice, intelligent plots that look good. That means intelligent APIs (more like ggplot than matplotlib) and intelligent defaults (no jet colormap).
@@ -21,3 +21,27 @@ A (hopefully) nice plotting library.
     * N -> N, like Cartesian -> Spherical
     * Common built-ins like Cartesian, Polar, Spherical, RGB, HSL
 * Animation = function(time)
+
+# Proposed Examples
+```
+# Scatter plot with trend line
+graph = coord(pos=(log("wealth"), sqrt("height")), group="gender") \
+    + glyph.points(size="weight") \
+    + glyph.interpolate(smooth="linear_model", free="wealth", group=False)   # Only one trend line
+
+# Pie Chart
+graph = coord(pos=(proportion("favorite food"), stack), transform=(r, theta)) \
+    + glyph.interval()
+
+# Interaction Plot
+graph = coord(pos=("SAT Score", "GPA"))
+graph += glyph.interpolate(smooth=interaction("SAT", "GPA"), type=contour)
+
+# Heatmap
+graph = coord(pos=("SAT", "GPA")) \
+    + glyph.interpolate(smooth=age_based_on("SAT", "GPA"), type=heatmap)
+
+# Matrix Plot
+graph = coord(pos=("SAT Score", "GPA")) * facet(x="age", y="state") \
+    + glyph.points()
+```
