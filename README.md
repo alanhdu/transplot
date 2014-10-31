@@ -1,7 +1,7 @@
 transplot
 ====
 
-A (hopefully) nice plotting library. Essentially ggplot but with easy coordinate transforms and segregation of rendering.
+A (hopefully) nice plotting library. Will probably end up as bokeh with ggplot API, except with custom-rendering.
 
 # Goals
 * **Intelligent:** It should be easy to make nice, intelligent plots that look good. That means intelligent APIs (more like ggplot than matplotlib) and intelligent defaults (no jet colormap).
@@ -25,9 +25,9 @@ A (hopefully) nice plotting library. Essentially ggplot but with easy coordinate
 # Proposed Examples
 ```
 # Scatter plot with trend line
-graph = coord(pos=(log("wealth"), sqrt("height")), group="gender") \
+graph = coord(pos="wealth", "height"), group="gender") \
     + glyph.points(size="weight") \
-    + glyph.interpolate(smooth="linear_model", free="wealth", group=False)   # Only one trend line
+    + glyph.line(pos="linear_model", group=False)   # Only one trend line
 
 # Pie Chart
 graph = coord(pos=(proportion("favorite food"), stack), transform=(r, theta)) \
