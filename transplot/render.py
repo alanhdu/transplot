@@ -2,9 +2,9 @@ import pandas as pd
 
 import plot
 
-
-def _scale(pos):
-    return 1000 * (pos - pos.min()) / (pos.max() - pos.min())
+def _scale(pos, min=0, max=1000):
+    p = (pos - pos.min()) / (pos.max() - pos.min()) # p in [0, 1]
+    return min + p * (max - min)
 
 def renderSVG(graph, fname="test.svg"):
     import svgwrite
@@ -17,7 +17,7 @@ def renderSVG(graph, fname="test.svg"):
         color = graph.color if glyph.color is None else glyph.color
 
         scaled = _scale(pos)
-        if isinstance(glyph, plot.Point):
+        if isinstance(glyph, plot.Points):
             p1, p2 = pos.columns
             for x, y in zip(scaled[p1], scaled[p2]):
                 dwg.add(dwg.circle( (x,y), r=10))
@@ -37,7 +37,7 @@ def renderTk(graph):
         color = graph.color if glyph.color is None else glyph.color
 
 
-        if isinstance(glyph, plot.Point):
+        if isinstance(glyph, plot.Points):
             scale = 400.0 / (pos.max() - pos.min())
             pos = (pos - pos.min()) * scale
 
