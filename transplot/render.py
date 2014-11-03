@@ -24,18 +24,20 @@ def _scaleArea(pos, min=8):
     else:
         return np.sqrt(pos / pos.min()) * min
 
-def _rgb2Hex(r, g, b):
+def _rgb2Hex(color):
+    r, g, b = color
     return "#{:02x}{:02x}{:02x}".format(int(255*r), int(255*g), int(255*b))
 def _groupPalette(group):
     unique = group.data.unique()
     palette = sns.color_palette("husl", len(unique))
-    p = {group : _rgb2Hex(r, g, b)
-         for group, (r, g, b) in izip(unique, palette)}
+    p = {group : _rgb2Hex(color)
+         for group, color in izip(unique, palette)}
     for group in group.data:
         yield p[group]
-
 def _groupColormap(data):
-    pass
+    palette = sns.color_palette("BuPu_d", 256)
+    for d in _scaleLinear(data, min=0, max=255):
+        yield _rgb2Hex(palette[int(d)])
 
 def renderSVG(graph, fname="test.svg"):
     import svgwrite
