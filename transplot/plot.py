@@ -4,7 +4,7 @@ import blaze as bz
 import pandas as pd
 
 class Graph(object):
-    def __init__(self, pos, color=None, size=None, group=None, transform=None, glyphs=()):
+    def __init__(self, pos, color=None, size=10, group=None, transform=None, glyphs=()):
         self.pos = bz.into(pd.DataFrame, pos)
         self.color = color
         self.size = size
@@ -24,6 +24,8 @@ class Transform(namedtuple("Transform", ["pos", "color", "size"])):
 
 class Glyph(object): 
     pass
+
+Group = namedtuple("Group", ["data"])
 
 class Points(namedtuple("Points", ["pos", "color", "size", "transform"]),
              Glyph):
