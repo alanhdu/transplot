@@ -42,23 +42,38 @@ def _groupColormap(data):
 def renderSVG(graph, fname="test.svg"):
     import svgwrite
     dwg = svgwrite.Drawing(fname)
-    dwg.viewbox(-50, -50, 1100, 1100)
+    dwg.viewbox(-100, -50, 1150, 1150)
     dwg.fit("right", "bottom", "meet")
 
     for glyph in graph.glyphs:
         pos = graph.pos if glyph.pos is None else glyph.pos
+        transform = graph.transform if glyph.transform is None else glyph.transform
         size = graph.size if glyph.size is None else glyph.size
-
+        
         if isinstance(glyph, plot.Points):
             p1, p2 = pos.columns
+            if transform is not None and transform.pos is not None:
+                pos[p1] = transform.pos.scale_1(pos[p1])
+                pos[p2] = transform.pos.scale_2(pos[p2])
+                x = pd.Series(transform.pos.x(p) for p in izip(pos[p1], pos[p2]))
+                y = pd.Series(transform.pos.y(p) for p in izip(pos[p1], pos[p2]))
+                pos = pd.DataFrame({p1:x, p2:y})
+
             scaled = _scaleLinear(pos, min=0, max=1000)
             pos = izip(scaled[p1], 1000 - scaled[p2])
 
-            xaxis = dwg.line(start=(0, 1000), end=(0, 0), stroke="black")
-            yaxis = dwg.line(start=(0, 1000), end=(1000, 1000), stroke="black")
+            """
+            for i, x in enumerate(np.linspace(pos[p1].min(), pos[p1].max(), 10)):
+                pass
 
-            dwg.add(xaxis)
-            dwg.add(yaxis)
+            for i, y in enumerate(np.linspace(pos[p2].min(), pos[p2].max(), 10)):
+                pass
+
+            dwg.add(dwg.line(start=(0, 1000), end=(0, 0), stroke="black",
+                             stroke_width=4))   # x-axis
+            dwg.add(dwg.line(start=(0, 1000), end=(1000, 1000), stroke="black",
+                             stroke_width=4))   # y-axis
+            """
             
             if not isinstance(size, collections.Iterable):
                 size = itertools.repeat(size)
