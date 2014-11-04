@@ -105,7 +105,7 @@ def renderSVG(graph, fname="test.svg"):
 
             if glyph.color is None:
                 if graph.color is None:
-                    color = "blue"
+                    color = itertools.repeat("#292F59")
                 elif isinstance(graph.color, plot.Group):
                     color = _groupPalette(graph.color)
                 else:
