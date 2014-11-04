@@ -10,8 +10,11 @@ class Polar(object):
         return pos
     @staticmethod
     def scale_2(pos):
-        s = render._ScaleLinear(min=0, max=2*np.pi)
-        return s.scaleData(pos)
+        s = render._ScaleLinear(min=0, max=2*np.pi, data=pos)
+        return s.scaleData()
+    @staticmethod
+    def point(pos):
+        return Polar.x(pos), Polar.y(pos)
     @staticmethod
     def x(pos):
         r, theta = pos
@@ -28,6 +31,9 @@ class Parabolic(object):
     @staticmethod
     def scale_2(pos):
         return pos
+    @staticmethod
+    def point(pos):
+        return Parabolic.x(pos), Parabolic.y(pos)
     @staticmethod
     def x(pos):
         tau, sigma = pos

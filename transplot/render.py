@@ -11,20 +11,23 @@ import plot
 
 
 class _ScaleLinear(object):
-    def __init__(self, min=0, max=1000):
+    def __init__(self, min=0, max=1000, data=None):
+        self.data = data
         self.min = min
         self.max = max
 
-    def scaleData(self, pos):
-        if (pos.max() - pos.min() == 0).all():
+    def scaleData(self):
+        min = self.data.min()
+        max = self.data.max()
+        if (min - max == 0).all():
             df = pos.copy()
             return self.min + df - df
         else:
-            p = (pos - pos.min()) / (pos.max() - pos.min()) # p in [0, 1]
+            p = (self.data - min) / (max - min) # p in [0, 1]
             return self.min + p * (self.max - self.min)
-    def scalePoint(self, pos, data):
-        pos = (pos - data.min()) / (data.max() - data.min()) # pos in [0, 1]
-        return self.min + pos * (self.max - self.min)
+    def scalePoint(self, point):
+        point = (point - self.data.min()) / (self.data.max() - self.data.min())
+        return self.min + point * (self.max - self.min)
 
 def _scaleArea(pos, min=8):
     if (pos.max() - pos.min() == 0).all():
@@ -45,8 +48,8 @@ def _groupPalette(group):
         yield p[group]
 def _groupColormap(data):
     palette = sns.color_palette("BuPu_d", 256)
-    ColorScaler = _ScaleLinear(min=0, max=255)
-    for d in ColorScaler.scaleData(data):
+    ColorScaler = _ScaleLinear(min=0, max=255, data=data)
+    for d in ColorScaler.scaleData():
         yield _rgb2Hex(palette[int(d)])
 
 def renderSVG(graph, fname="test.svg"):
@@ -55,12 +58,15 @@ def renderSVG(graph, fname="test.svg"):
     dwg.viewbox(-100, -50, 1150, 1150)
     dwg.fit("right", "bottom", "meet")
 
-    scaler = _ScaleLinear(min=0, max=1000)
 
     for glyph in graph.glyphs:
         pos = graph.pos if glyph.pos is None else glyph.pos
         transform = graph.transform if glyph.transform is None else glyph.transform
         size = graph.size if glyph.size is None else glyph.size
+
+        scaler = _ScaleLinear(data=pos, min=0, max=1000)
+
+        xmed, ymed = pos.median()
         
         if isinstance(glyph, plot.Points):
             p1, p2 = pos.columns
@@ -69,46 +75,25 @@ def renderSVG(graph, fname="test.svg"):
                 pos[p2] = transform.pos.scale_2(pos[p2])
                 xs = pd.Series(transform.pos.x(p) for p in izip(pos[p1], pos[p2]))
                 ys = pd.Series(transform.pos.y(p) for p in izip(pos[p1], pos[p2]))
-                scaled = scaler.scaleData(pd.DataFrame({p1: xs, p2:ys}))
 
-                start = transform.pos.x((0,3)), transform.pos.y((0,3))
-                start = scaler.scalePoint(start[0], xs), scaler.scalePoint(start[1], ys)
+                scaler = _ScaleLinear(min=0, max=1000, data=pd.DataFrame({p1: xs, p2: ys}))
+                scaled = scaler.scaleData()
 
-                print xs.min(), xs.max()
-                print
-                print ys.min(), ys.max()
-                print
+                xpoints = []
+                for c1 in np.linspace(pos[p1].min(), pos[p1].max(), 50):
+                    point = (c1, ymed)
+                    x, y = scaler.scalePoint(transform.pos.point(point))
+                    xpoints.append((x, 1000-y))
+                dwg.add(dwg.polyline(xpoints, stroke="black", stroke_width=4, fill_opacity=0))
 
-                for i, c1 in enumerate(np.linspace(pos[p1].min(), pos[p1].max(), 25)):
-                    point = (c1, 3)
-                    x, y = transform.pos.x(point), transform.pos.y(point)
-                    print x, y, "\t",
-                    x, y = scaler.scalePoint(x, xs), scaler.scalePoint(y, ys)
-                    if i == 0:
-                        dwg.add(dwg.line(start=start, end=(x, y), stroke="black", stroke_width=4))
-                    else:
-                        dwg.add(dwg.line(start=prev, end=(x, y), stroke="black", stroke_width=4))
-                    print x, y, c1
-
-                    prev = x, y
-
-                print
-
-                start = transform.pos.x((3,0)), transform.pos.y((3,0))
-                start = scaler.scalePoint(start[0], xs), scaler.scalePoint(start[1], ys)
-                for i, c2 in enumerate(np.linspace(pos[p2].min(), pos[p2].max(), 25)):
-                    point = (3, c2)
-                    x, y = transform.pos.x(point), transform.pos.y(point)
-                    x, y = scaler.scalePoint(x, xs), scaler.scalePoint(y, ys)
-                    if i == 0:
-                        dwg.add(dwg.line(start=start, end=(x, y), stroke="black", stroke_width=4))
-                    else:
-                        dwg.add(dwg.line(start=prev, end=(x, y), stroke="black", stroke_width=4))
-                    print x, y
-
-                    prev = x, y
+                ypoints = []
+                for c2 in np.linspace(pos[p2].min(), pos[p2].max(), 50):
+                    point = (xmed, c2)
+                    x, y = scaler.scalePoint(transform.pos.point(point))
+                    ypoints.append((x, 1000-y))
+                dwg.add(dwg.polyline(ypoints, stroke="black", stroke_width=4, fill_opacity=0))
             else:
-                scaled = scaler.scaleData(pos)
+                scaled = scaler.scaleData()
 
             pos = izip(scaled[p1], 1000 - scaled[p2])
 
