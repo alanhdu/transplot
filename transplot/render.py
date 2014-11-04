@@ -51,9 +51,15 @@ def renderSVG(graph, fname="test.svg"):
 
         if isinstance(glyph, plot.Points):
             p1, p2 = pos.columns
-            scaled = _scaleLinear(pos)
-            pos = izip(scaled[p1], scaled[p2])
+            scaled = _scaleLinear(pos, min=0, max=1000)
+            pos = izip(scaled[p1], 1000 - scaled[p2])
 
+            xaxis = dwg.line(start=(0, 1000), end=(0, 0), stroke="black")
+            yaxis = dwg.line(start=(0, 1000), end=(1000, 1000), stroke="black")
+
+            dwg.add(xaxis)
+            dwg.add(yaxis)
+            
             if not isinstance(size, collections.Iterable):
                 size = itertools.repeat(size)
             else:
@@ -72,7 +78,7 @@ def renderSVG(graph, fname="test.svg"):
                 color = _groupColormap(glyph.color)
 
             for p, r, c in izip(pos, size, color):
-                dwg.add(dwg.circle(p, r=r, fill=c))
+                dwg.add(dwg.circle(p, r=r, fill=c, stroke=c))
     dwg.save()
     return dwg
 
