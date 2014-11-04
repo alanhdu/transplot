@@ -9,13 +9,22 @@ import seaborn as sns
 
 import plot
 
-def _scaleLinear(pos, min=0, max=1000):
-    if (pos.max() - pos.min() == 0).all():
-        df = pos.copy()
-        return min + df - df
-    else:
-        p = (pos - pos.min()) / (pos.max() - pos.min()) # p in [0, 1]
-        return min + p * (max - min)
+
+class _ScaleLinear(object):
+    def __init__(self, min=0, max=1000):
+        self.min = min
+        self.max = max
+
+    def scaleData(self, pos):
+        if (pos.max() - pos.min() == 0).all():
+            df = pos.copy()
+            return self.min + df - df
+        else:
+            p = (pos - pos.min()) / (pos.max() - pos.min()) # p in [0, 1]
+            return self.min + p * (self.max - self.min)
+    def scalePoint(self, pos, data):
+        pos = (pos - data.min()) / (data.max() - data.min()) # pos in [0, 1]
+        return self.min + pos * (self.max - self.min)
 
 def _scaleArea(pos, min=8):
     if (pos.max() - pos.min() == 0).all():
@@ -36,7 +45,8 @@ def _groupPalette(group):
         yield p[group]
 def _groupColormap(data):
     palette = sns.color_palette("BuPu_d", 256)
-    for d in _scaleLinear(data, min=0, max=255):
+    ColorScaler = _ScaleLinear(min=0, max=255)
+    for d in ColorScaler.scaleData(data):
         yield _rgb2Hex(palette[int(d)])
 
 def renderSVG(graph, fname="test.svg"):
@@ -44,6 +54,8 @@ def renderSVG(graph, fname="test.svg"):
     dwg = svgwrite.Drawing(fname)
     dwg.viewbox(-100, -50, 1150, 1150)
     dwg.fit("right", "bottom", "meet")
+
+    scaler = _ScaleLinear(min=0, max=1000)
 
     for glyph in graph.glyphs:
         pos = graph.pos if glyph.pos is None else glyph.pos
@@ -55,25 +67,51 @@ def renderSVG(graph, fname="test.svg"):
             if transform is not None and transform.pos is not None:
                 pos[p1] = transform.pos.scale_1(pos[p1])
                 pos[p2] = transform.pos.scale_2(pos[p2])
-                x = pd.Series(transform.pos.x(p) for p in izip(pos[p1], pos[p2]))
-                y = pd.Series(transform.pos.y(p) for p in izip(pos[p1], pos[p2]))
-                pos = pd.DataFrame({p1:x, p2:y})
+                xs = pd.Series(transform.pos.x(p) for p in izip(pos[p1], pos[p2]))
+                ys = pd.Series(transform.pos.y(p) for p in izip(pos[p1], pos[p2]))
+                scaled = scaler.scaleData(pd.DataFrame({p1: xs, p2:ys}))
 
-            scaled = _scaleLinear(pos, min=0, max=1000)
+                start = transform.pos.x((0,3)), transform.pos.y((0,3))
+                start = scaler.scalePoint(start[0], xs), scaler.scalePoint(start[1], ys)
+
+                print xs.min(), xs.max()
+                print
+                print ys.min(), ys.max()
+                print
+
+                for i, c1 in enumerate(np.linspace(pos[p1].min(), pos[p1].max(), 25)):
+                    point = (c1, 3)
+                    x, y = transform.pos.x(point), transform.pos.y(point)
+                    print x, y, "\t",
+                    x, y = scaler.scalePoint(x, xs), scaler.scalePoint(y, ys)
+                    if i == 0:
+                        dwg.add(dwg.line(start=start, end=(x, y), stroke="black", stroke_width=4))
+                    else:
+                        dwg.add(dwg.line(start=prev, end=(x, y), stroke="black", stroke_width=4))
+                    print x, y, c1
+
+                    prev = x, y
+
+                print
+
+                start = transform.pos.x((3,0)), transform.pos.y((3,0))
+                start = scaler.scalePoint(start[0], xs), scaler.scalePoint(start[1], ys)
+                for i, c2 in enumerate(np.linspace(pos[p2].min(), pos[p2].max(), 25)):
+                    point = (3, c2)
+                    x, y = transform.pos.x(point), transform.pos.y(point)
+                    x, y = scaler.scalePoint(x, xs), scaler.scalePoint(y, ys)
+                    if i == 0:
+                        dwg.add(dwg.line(start=start, end=(x, y), stroke="black", stroke_width=4))
+                    else:
+                        dwg.add(dwg.line(start=prev, end=(x, y), stroke="black", stroke_width=4))
+                    print x, y
+
+                    prev = x, y
+            else:
+                scaled = scaler.scaleData(pos)
+
             pos = izip(scaled[p1], 1000 - scaled[p2])
 
-            """
-            for i, x in enumerate(np.linspace(pos[p1].min(), pos[p1].max(), 10)):
-                pass
-
-            for i, y in enumerate(np.linspace(pos[p2].min(), pos[p2].max(), 10)):
-                pass
-
-            dwg.add(dwg.line(start=(0, 1000), end=(0, 0), stroke="black",
-                             stroke_width=4))   # x-axis
-            dwg.add(dwg.line(start=(0, 1000), end=(1000, 1000), stroke="black",
-                             stroke_width=4))   # y-axis
-            """
             
             if not isinstance(size, collections.Iterable):
                 size = itertools.repeat(size)
