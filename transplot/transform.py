@@ -4,17 +4,29 @@ import numpy as np
 
 import render
 
-class Polar(object):
-    @staticmethod
-    def scale_1(pos):
+class PosTransform(object):
+    @classmethod
+    def point(cls, pos):
+        return cls.x(pos), cls.y(pos)
+    @classmethod
+    def scale_1(cls, pos):
         return pos
-    @staticmethod
-    def scale_2(pos):
+    @classmethod
+    def scale_2(cls, pos):
+        return pos
+    @classmethod
+    def x(cls, pos):
+        return pos[0]
+    @classmethod
+    def y(cls, pos):
+        return pos[1]
+
+
+class Polar(PosTransform):
+    @classmethod
+    def scale_2(cls, pos):
         s = render._ScaleLinear(min=0, max=2*np.pi, data=pos)
         return s.scaleData()
-    @staticmethod
-    def point(pos):
-        return Polar.x(pos), Polar.y(pos)
     @staticmethod
     def x(pos):
         r, theta = pos
@@ -24,22 +36,13 @@ class Polar(object):
         r, theta = pos
         return r * np.sin(theta)
 
-class Parabolic(object):
-    @staticmethod
-    def scale_1(pos):
-        return pos
-    @staticmethod
-    def scale_2(pos):
-        return pos
-    @staticmethod
-    def point(pos):
-        return Parabolic.x(pos), Parabolic.y(pos)
-    @staticmethod
-    def x(pos):
+class Parabolic(PosTransform):
+    @classmethod
+    def x(cls, pos):
         tau, sigma = pos
         return tau * sigma
-    @staticmethod
-    def y(pos):
+    @classmethod
+    def y(cls, pos):
         tau, sigma = pos
         return (tau * tau - sigma * sigma) / 2
 

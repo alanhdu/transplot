@@ -94,6 +94,13 @@ def renderSVG(graph, fname="test.svg"):
                 dwg.add(dwg.polyline(ypoints, stroke="black", stroke_width=4, fill_opacity=0))
             else:
                 scaled = scaler.scaleData()
+                dwg.add(dwg.line(start=(0, 1000), end=(1000, 1000), stroke_width=4, stroke="black"))
+                for c1 in np.linspace(pos[p1].min(), pos[p1].max(), 5):
+                    pass
+
+                for c2 in np.linspace(pos[p2].min(), pos[p2].max(), 5):
+                    pass
+                dwg.add(dwg.line(start=(0, 1000), end=(0, 0), stroke_width=4, stroke="black"))
 
             pos = izip(scaled[p1], 1000 - scaled[p2])
 
