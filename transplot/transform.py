@@ -21,7 +21,6 @@ class PosTransform(object):
     def y(cls, pos):
         return pos[1]
 
-
 class Polar(PosTransform):
     @classmethod
     def scale_2(cls, pos):

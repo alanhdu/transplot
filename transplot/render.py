@@ -15,7 +15,6 @@ class _ScaleLinear(object):
         self.data = data
         self.min = min
         self.max = max
-
     def scaleData(self):
         min = self.data.min()
         max = self.data.max()
@@ -56,8 +55,7 @@ def renderSVG(graph, fname="test.svg"):
     import svgwrite
     dwg = svgwrite.Drawing(fname)
     dwg.viewbox(-100, -50, 1150, 1150)
-    dwg.fit("right", "bottom", "meet")
-
+    dwg.fit("right", "bottom", "meet")  # aspect ratio settings
 
     for glyph in graph.glyphs:
         pos = graph.pos if glyph.pos is None else glyph.pos
@@ -95,15 +93,16 @@ def renderSVG(graph, fname="test.svg"):
             else:
                 scaled = scaler.scaleData()
                 dwg.add(dwg.line(start=(0, 1000), end=(1000, 1000), stroke_width=4, stroke="black"))
-                for c1 in np.linspace(pos[p1].min(), pos[p1].max(), 5):
-                    pass
+                for c1 in np.linspace(pos[p1].min(), pos[p1].max(), 6, endpoint=False):
+                    x, y = scaler.scalePoint((c1, 0))
+                    dwg.add(dwg.text(str(c1), x=[x], y=[1050], font_size=40, text_anchor="middle"))
 
-                for c2 in np.linspace(pos[p2].min(), pos[p2].max(), 5):
-                    pass
+                for c2 in np.linspace(pos[p2].min(), pos[p2].max(), 6, endpoint=False):
+                    x, y = scaler.scalePoint((0, c2))
+                    dwg.add(dwg.text(str(c2), x=[-20], y=[1000- y], font_size=40, text_anchor="end"))
                 dwg.add(dwg.line(start=(0, 1000), end=(0, 0), stroke_width=4, stroke="black"))
 
             pos = izip(scaled[p1], 1000 - scaled[p2])
-
             
             if not isinstance(size, collections.Iterable):
                 size = itertools.repeat(size)
@@ -133,7 +132,6 @@ def renderTk(graph):
     master = tk.Tk()
     w = tk.Canvas(master, width=400, height=400)
     w.pack()
-
 
     for glyph in graph.glyphs:
         pos = graph.pos if glyph.pos is None else glyph.pos
