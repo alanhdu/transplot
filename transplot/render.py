@@ -52,17 +52,19 @@ def renderSVG(graph, fname="test.svg"):
             scaler = util._ScaleLinear(min=0, max=1000, data=pd.DataFrame({p1: xs, p2: ys}))
             scaled = scaler.scaleData()
 
-            for c2 in np.linspace(pos[p2].min(), pos[p2].max(), 6):
+            min, max = scaler.range
+
+            for c2 in np.linspace(min[1], max[1], 6):
                 xpoints = []
-                for c1 in np.linspace(pos[p1].min(), pos[p1].max(), 50):
+                for c1 in np.linspace(min[0], max[0], 50):
                     point = (c1, c2)
                     x, y = scaler.scalePoint(transform.pos.point(point))
                     xpoints.append((x, 1000-y))
                 dwg.add(dwg.polyline(xpoints, stroke="white", stroke_width=4, fill_opacity=0))
 
-            for c1 in np.linspace(pos[p1].min(), pos[p1].max(), 6):
+            for c1 in np.linspace(min[0], max[0], 6):
                 ypoints = []
-                for c2 in np.linspace(pos[p2].min(), pos[p2].max(), 50):
+                for c2 in np.linspace(min[1], max[1], 50):
                     point = (c1, c2)
                     x, y = scaler.scalePoint(transform.pos.point(point))
                     ypoints.append((x, 1000-y))

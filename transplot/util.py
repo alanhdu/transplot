@@ -6,9 +6,12 @@ class _ScaleLinear(object):
         self.data = data
         self.min = min
         self.max = max
+
+        self.dataMin = data.min()
+        self.dataMax = data.max()
     def scaleData(self):
-        min = self.data.min()
-        max = self.data.max()
+        min = self.dataMin
+        max = self.dataMax
         if (min - max == 0).all():
             df = pos.copy()
             return self.min + df - df
@@ -16,8 +19,11 @@ class _ScaleLinear(object):
             p = (self.data - min) / (max - min) # p in [0, 1]
             return self.min + p * (self.max - self.min)
     def scalePoint(self, point):
-        point = (point - self.data.min()) / (self.data.max() - self.data.min())
+        point = (point - self.dataMin) / (self.dataMax - self.dataMin)
         return self.min + point * (self.max - self.min)
+    @property
+    def range(self):
+        return self.dataMin, self.dataMax
 
 def _scaleArea(pos, min=8):
     if (pos.max() - pos.min() == 0).all():
