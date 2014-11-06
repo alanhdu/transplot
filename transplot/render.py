@@ -57,6 +57,8 @@ def renderSVG(graph, fname="test.svg"):
     dwg.viewbox(-100, -50, 1150, 1150)
     dwg.fit("right", "bottom", "meet")  # aspect ratio settings
 
+    dwg.add(dwg.rect((0,0), (1000, 1000), fill="#DDDDDD"))
+
     for glyph in graph.glyphs:
         pos = graph.pos if glyph.pos is None else glyph.pos
         transform = graph.transform if glyph.transform is None else glyph.transform
@@ -77,30 +79,36 @@ def renderSVG(graph, fname="test.svg"):
                 scaler = _ScaleLinear(min=0, max=1000, data=pd.DataFrame({p1: xs, p2: ys}))
                 scaled = scaler.scaleData()
 
-                xpoints = []
-                for c1 in np.linspace(pos[p1].min(), pos[p1].max(), 50):
-                    point = (c1, ymed)
-                    x, y = scaler.scalePoint(transform.pos.point(point))
-                    xpoints.append((x, 1000-y))
-                dwg.add(dwg.polyline(xpoints, stroke="black", stroke_width=4, fill_opacity=0))
+                for c2 in np.linspace(pos[p2].min(), pos[p2].max(), 6):
+                    xpoints = []
+                    for c1 in np.linspace(pos[p1].min(), pos[p1].max(), 50):
+                        point = (c1, c2)
+                        x, y = scaler.scalePoint(transform.pos.point(point))
+                        xpoints.append((x, 1000-y))
+                    dwg.add(dwg.polyline(xpoints, stroke="white", stroke_width=4, fill_opacity=0))
 
-                ypoints = []
-                for c2 in np.linspace(pos[p2].min(), pos[p2].max(), 50):
-                    point = (xmed, c2)
-                    x, y = scaler.scalePoint(transform.pos.point(point))
-                    ypoints.append((x, 1000-y))
-                dwg.add(dwg.polyline(ypoints, stroke="black", stroke_width=4, fill_opacity=0))
+                for c1 in np.linspace(pos[p1].min(), pos[p1].max(), 6):
+                    ypoints = []
+                    for c2 in np.linspace(pos[p2].min(), pos[p2].max(), 50):
+                        point = (c1, c2)
+                        x, y = scaler.scalePoint(transform.pos.point(point))
+                        ypoints.append((x, 1000-y))
+                    dwg.add(dwg.polyline(ypoints, stroke="white", stroke_width=4, fill_opacity=0))
             else:
-                scaled = scaler.scaleData()
-                dwg.add(dwg.line(start=(0, 1000), end=(1000, 1000), stroke_width=4, stroke="black"))
                 for c1 in np.linspace(pos[p1].min(), pos[p1].max(), 6, endpoint=False):
                     x, y = scaler.scalePoint((c1, 0))
                     dwg.add(dwg.text(str(c1), x=[x], y=[1050], font_size=40, text_anchor="middle"))
+                    dwg.add(dwg.line(start=(x, 0), end=(x, 1000), stroke_width=4, stroke="white"))
 
                 for c2 in np.linspace(pos[p2].min(), pos[p2].max(), 6, endpoint=False):
                     x, y = scaler.scalePoint((0, c2))
-                    dwg.add(dwg.text(str(c2), x=[-20], y=[1000- y], font_size=40, text_anchor="end"))
+                    dwg.add(dwg.text(str(c2), x=[-20], y=[1000 - y], font_size=40, text_anchor="end"))
+                    dwg.add(dwg.line(start=(0, 1000-y), end=(1000, 1000-y), stroke_width=4, stroke="white"))
+
+                dwg.add(dwg.line(start=(0, 1000), end=(1000, 1000), stroke_width=4, stroke="black"))
                 dwg.add(dwg.line(start=(0, 1000), end=(0, 0), stroke_width=4, stroke="black"))
+
+                scaled = scaler.scaleData()
 
             pos = izip(scaled[p1], 1000 - scaled[p2])
             

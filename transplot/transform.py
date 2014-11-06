@@ -45,6 +45,21 @@ class Parabolic(PosTransform):
         tau, sigma = pos
         return (tau * tau - sigma * sigma) / 2
 
+class Elliptic(PosTransform):
+    @classmethod
+    def scale_2(cls, pos):
+        s = render._ScaleLinear(min=0, max=2*np.pi, data=pos)
+        return s.scaleData()
+
+    @classmethod
+    def x(cls, pos):
+        mu, nu = pos
+        return np.cosh(mu) * np.cos(nu)
+    @classmethod
+    def y(cls, pos):
+        mu, nu = pos
+        return np.sinh(mu) * np.sin(nu)
+
 class Transform(namedtuple("Transform", ["pos", "color", "size"])):
     def __new__(cls, pos=None, color=None, size=None):
         return super(Transform, cls).__new__(cls, pos, color,size)

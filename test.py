@@ -20,6 +20,11 @@ def pointPolar():
             + tp.plot.Points()
     tp.render.renderSVG(g, fname="img/pointPolar.svg")
 
+def pointElliptic():
+    g = tp.plot.Graph(pos=df[["SepalLength", "SepalWidth"]]) * tp.transform.Transform(pos=tp.transform.Elliptic) \
+            + tp.plot.Points()
+    tp.render.renderSVG(g, fname="img/pointElliptic.svg")
+
 def pointColormap():
     g = tp.plot.Graph(pos=df[["SepalLength", "SepalWidth"]]) \
             + tp.plot.Points(size=df["PetalLength"], color=df["PetalWidth"])
@@ -29,3 +34,4 @@ pointGroup()
 pointColormap()
 pointTransform()
 pointPolar()
+pointElliptic()
