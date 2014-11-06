@@ -8,48 +8,21 @@ import pandas as pd
 import seaborn as sns
 
 import plot
+import util
 
 
-class _ScaleLinear(object):
-    def __init__(self, min=0, max=1000, data=None):
-        self.data = data
-        self.min = min
-        self.max = max
-    def scaleData(self):
-        min = self.data.min()
-        max = self.data.max()
-        if (min - max == 0).all():
-            df = pos.copy()
-            return self.min + df - df
-        else:
-            p = (self.data - min) / (max - min) # p in [0, 1]
-            return self.min + p * (self.max - self.min)
-    def scalePoint(self, point):
-        point = (point - self.data.min()) / (self.data.max() - self.data.min())
-        return self.min + point * (self.max - self.min)
-
-def _scaleArea(pos, min=8):
-    if (pos.max() - pos.min() == 0).all():
-        df = pos.copy()
-        return min + df - df
-    else:
-        return np.sqrt(pos / pos.min()) * min
-
-def _rgb2Hex(color):
-    r, g, b = color
-    return "#{:02x}{:02x}{:02x}".format(int(255*r), int(255*g), int(255*b))
 def _groupPalette(group):
     unique = group.data.unique()
     palette = sns.color_palette("husl", len(unique))
-    p = {group : _rgb2Hex(color)
+    p = {group : util._rgb2Hex(color)
          for group, color in izip(unique, palette)}
     for group in group.data:
         yield p[group]
 def _groupColormap(data):
     palette = sns.color_palette("BuPu_d", 256)
-    ColorScaler = _ScaleLinear(min=0, max=255, data=data)
+    ColorScaler = util._ScaleLinear(min=0, max=255, data=data)
     for d in ColorScaler.scaleData():
-        yield _rgb2Hex(palette[int(d)])
+        yield util._rgb2Hex(palette[int(d)])
 
 def renderSVG(graph, fname="test.svg"):
     import svgwrite
@@ -57,14 +30,14 @@ def renderSVG(graph, fname="test.svg"):
     dwg.viewbox(-100, -50, 1150, 1150)
     dwg.fit("right", "bottom", "meet")  # aspect ratio settings
 
-    dwg.add(dwg.rect((0,0), (1000, 1000), fill="#DDDDDD"))
+    dwg.add(dwg.rect((0,0), (1000, 1000), fill="#CCCCCC"))
 
     for glyph in graph.glyphs:
         pos = graph.pos if glyph.pos is None else glyph.pos
         transform = graph.transform if glyph.transform is None else glyph.transform
         size = graph.size if glyph.size is None else glyph.size
 
-        scaler = _ScaleLinear(data=pos, min=0, max=1000)
+        scaler = util._ScaleLinear(data=pos, min=0, max=1000)
 
         xmed, ymed = pos.median()
         
@@ -76,7 +49,7 @@ def renderSVG(graph, fname="test.svg"):
                 xs = pd.Series(transform.pos.x(p) for p in izip(pos[p1], pos[p2]))
                 ys = pd.Series(transform.pos.y(p) for p in izip(pos[p1], pos[p2]))
 
-                scaler = _ScaleLinear(min=0, max=1000, data=pd.DataFrame({p1: xs, p2: ys}))
+                scaler = util._ScaleLinear(min=0, max=1000, data=pd.DataFrame({p1: xs, p2: ys}))
                 scaled = scaler.scaleData()
 
                 for c2 in np.linspace(pos[p2].min(), pos[p2].max(), 6):
@@ -115,7 +88,7 @@ def renderSVG(graph, fname="test.svg"):
             if not isinstance(size, collections.Iterable):
                 size = itertools.repeat(size)
             else:
-                size = _scaleArea(size)
+                size = util._scaleArea(size)
 
             if glyph.color is None:
                 if graph.color is None:

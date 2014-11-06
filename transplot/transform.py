@@ -2,7 +2,12 @@ from collections import namedtuple
 
 import numpy as np
 
-import render
+import util
+
+class Transform(namedtuple("Transform", ["pos", "color", "size"])):
+    def __new__(cls, pos=None, color=None, size=None):
+        return super(Transform, cls).__new__(cls, pos, color,size)
+
 
 class PosTransform(object):
     @classmethod
@@ -24,7 +29,7 @@ class PosTransform(object):
 class Polar(PosTransform):
     @classmethod
     def scale_2(cls, pos):
-        s = render._ScaleLinear(min=0, max=2*np.pi, data=pos)
+        s = util._ScaleLinear(min=0, max=2*np.pi, data=pos)
         return s.scaleData()
     @staticmethod
     def x(pos):
@@ -48,7 +53,7 @@ class Parabolic(PosTransform):
 class Elliptic(PosTransform):
     @classmethod
     def scale_2(cls, pos):
-        s = render._ScaleLinear(min=0, max=2*np.pi, data=pos)
+        s = util._ScaleLinear(min=0, max=2*np.pi, data=pos)
         return s.scaleData()
 
     @classmethod
@@ -60,6 +65,3 @@ class Elliptic(PosTransform):
         mu, nu = pos
         return np.sinh(mu) * np.sin(nu)
 
-class Transform(namedtuple("Transform", ["pos", "color", "size"])):
-    def __new__(cls, pos=None, color=None, size=None):
-        return super(Transform, cls).__new__(cls, pos, color,size)
