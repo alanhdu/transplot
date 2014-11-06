@@ -6,7 +6,7 @@ import pandas as pd
 import transform
 
 class Graph(object):
-    def __init__(self, pos, color=None, size=10, transform=None, glyphs=()):
+    def __init__(self, pos, color=None, size=10, transform=transform.identity, glyphs=()):
         self.pos = bz.into(pd.DataFrame, pos)
         self.color = color
         self.size = size
