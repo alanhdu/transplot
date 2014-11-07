@@ -43,36 +43,28 @@ def renderSVG(graph, fname="test.svg"):
         
         if isinstance(glyph, plot.Points):
             p1, p2 = pos.columns
-
             pos[p1] = transform.pos.scale_1(pos[p1])
             pos[p2] = transform.pos.scale_2(pos[p2])
-            xs = pd.Series(transform.pos.x(p) for p in izip(pos[p1], pos[p2]))
-            ys = pd.Series(transform.pos.y(p) for p in izip(pos[p1], pos[p2]))
 
-            scaler = util._ScaleLinear(min=0, max=1000, data=pd.DataFrame({p1: xs, p2: ys}))
+            transformed = transform.pos.point(pos)
+            min, max = pos.min(), pos.max()
+            scaler = util._ScaleLinear(min=0, max=1000, data=transformed)
             scaled = scaler.scaleData()
-
-            min = pos.min()
-            max = pos.max()
 
             for c2 in np.linspace(min[1], max[1], 6):
                 xpoints = collections.deque() 
-                for c1 in np.linspace(min[0], max[0], 50):
-                    point = (c1, c2)
-                    x, y = scaler.scalePoint(transform.pos.point(point))
-                    xpoints.append((x, 1000-y))
-                dwg.add(dwg.polyline(xpoints, stroke="white", stroke_width=4, fill_opacity=0))
-
+                df = pd.DataFrame({p1: np.linspace(min[0], max[0], 50), p2: c2})
+                df = scaler.scalePoint(transform.pos.point(df))
+                dwg.add(dwg.polyline((point for point in izip(df["x"], 1000-df["y"])),
+                                     stroke="white", stroke_width=4, fill_opacity=0))
             for c1 in np.linspace(min[0], max[0], 6):
-                ypoints = collections.deque()
-                for c2 in np.linspace(min[1], max[1], 50):
-                    point = (c1, c2)
-                    x, y = scaler.scalePoint(transform.pos.point(point))
-                    ypoints.append((x, 1000-y))
+                xpoints = collections.deque() 
+                df = pd.DataFrame({p1: c1, p2: np.linspace(min[1], max[1], 50)})
+                df = scaler.scalePoint(transform.pos.point(df))
+                dwg.add(dwg.polyline((point for point in izip(df["x"], 1000-df["y"])),
+                                     stroke="white", stroke_width=4, fill_opacity=0))
 
-                dwg.add(dwg.polyline(ypoints, stroke="white", stroke_width=4, fill_opacity=0))
-
-            pos = izip(scaled[p1], 1000 - scaled[p2])
+            pos = izip(scaled["x"], 1000 - scaled["y"])
             
             if not isinstance(size, collections.Iterable):
                 size = itertools.repeat(size)
