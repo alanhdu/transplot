@@ -1,6 +1,10 @@
+import itertools
+
 import numpy as np
 import pandas as pd
 
+def toPoint(df):
+    return itertools.izip(df.x.astype(int), 1000 - df.y.astype(int))
 class _ScaleLinear(object):
     def __init__(self, min=0, max=1000, data=None):
         self.data = data

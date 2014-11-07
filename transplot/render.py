@@ -55,16 +55,16 @@ def renderSVG(graph, fname="test.svg"):
                 xpoints = collections.deque() 
                 df = pd.DataFrame({p1: np.linspace(min[0], max[0], 50), p2: c2})
                 df = scaler.scalePoint(transform.pos.point(df))
-                dwg.add(dwg.polyline((point for point in izip(df["x"], 1000-df["y"])),
-                                     stroke="white", stroke_width=4, fill_opacity=0))
+                dwg.add(dwg.polyline(util.toPoint(df), stroke="white",
+                                     stroke_width=4, fill_opacity=0))
             for c1 in np.linspace(min[0], max[0], 6):
                 xpoints = collections.deque() 
                 df = pd.DataFrame({p1: c1, p2: np.linspace(min[1], max[1], 50)})
                 df = scaler.scalePoint(transform.pos.point(df))
-                dwg.add(dwg.polyline((point for point in izip(df["x"], 1000-df["y"])),
-                                     stroke="white", stroke_width=4, fill_opacity=0))
+                dwg.add(dwg.polyline(util.toPoint(df), stroke="white",
+                                     stroke_width=4, fill_opacity=0))
 
-            pos = izip(scaled["x"], 1000 - scaled["y"])
+            pos = util.toPoint(scaled)
             
             if not isinstance(size, collections.Iterable):
                 size = itertools.repeat(size)
