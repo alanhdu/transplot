@@ -12,7 +12,6 @@ class Graph(object):
         self.size = size
         self.transform = transform
         self.glyphs = glyphs
-
     def __add__(self, other):
         if isinstance(other, Glyph):
             return Graph(self.pos, self.color, self.size, self.transform, self.glyphs + (other,))

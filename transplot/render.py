@@ -37,14 +37,16 @@ def renderSVG(graph, fname="test.svg"):
         transform = graph.transform if glyph.transform is None else glyph.transform
         size = graph.size if glyph.size is None else glyph.size
 
+        pos = pos.dropna()
+
         scaler = util._ScaleLinear(data=pos, min=0, max=1000)
 
         xmed, ymed = pos.median()
         
         if isinstance(glyph, plot.Points):
             p1, p2 = pos.columns
-            pos[p1] = transform.pos.scale_1(pos[p1])
-            pos[p2] = transform.pos.scale_2(pos[p2])
+            pos.loc[:, p1] = transform.pos.scale_1(pos[p1])
+            pos.loc[:, p2] = transform.pos.scale_2(pos[p2])
 
             transformed = transform.pos.point(pos)
             min, max = pos.min(), pos.max()
@@ -53,16 +55,18 @@ def renderSVG(graph, fname="test.svg"):
 
             for c2 in np.linspace(min[1], max[1], 6):
                 xpoints = collections.deque() 
+
                 df = pd.DataFrame({p1: np.linspace(min[0], max[0], 50), p2: c2})
                 df = scaler.scalePoint(transform.pos.point(df))
                 dwg.add(dwg.polyline(util.toPoint(df), stroke="white",
-                                     stroke_width=4, fill_opacity=0))
+                    stroke_width=4, fill_opacity=0))
+
             for c1 in np.linspace(min[0], max[0], 6):
                 xpoints = collections.deque() 
                 df = pd.DataFrame({p1: c1, p2: np.linspace(min[1], max[1], 50)})
                 df = scaler.scalePoint(transform.pos.point(df))
                 dwg.add(dwg.polyline(util.toPoint(df), stroke="white",
-                                     stroke_width=4, fill_opacity=0))
+                    stroke_width=4, fill_opacity=0))
 
             pos = util.toPoint(scaled)
             
