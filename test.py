@@ -1,37 +1,16 @@
 import pandas as pd
 
 import transplot as tp
+import bokeh.plotting as bk
 
+df = pd.read_csv("data/iris.csv")
+df.Name = pd.Categorical(df.Name, ordered=False)
 
-df = pd.read_csv("/home/alan/workspace/vind/test/iris.csv")
+graph = tp.Graph(pos=df[["SepalLength", "PetalLength"]],
+                 transform=tp.Transform(pos=tp.Parabolic)) + \
+            tp.Point()
 
-def pointGroup():
-    g = tp.plot.Graph(pos=df[["SepalLength", "SepalWidth"]]) \
-            + tp.plot.Points(size=df["PetalLength"], color=tp.plot.Group(df["Name"]))
-    tp.render.renderSVG(g, fname="img/pointGroup.svg")
+plot = graph.render()
+bk.output_file("test.html")
+bk.save(obj=plot)
 
-def pointTransform():
-    g = tp.plot.Graph(pos=df[["SepalLength", "SepalWidth"]]) * tp.transform.Transform(pos=tp.transform.Parabolic) \
-            + tp.plot.Points()
-    tp.render.renderSVG(g, fname="img/pointTransform.svg")
-
-def pointPolar():
-    g = tp.plot.Graph(pos=df[["SepalLength", "SepalWidth"]]) * tp.transform.Transform(pos=tp.transform.Polar) \
-            + tp.plot.Points()
-    tp.render.renderSVG(g, fname="img/pointPolar.svg")
-
-def pointElliptic():
-    g = tp.plot.Graph(pos=df[["SepalLength", "SepalWidth"]]) * tp.transform.Transform(pos=tp.transform.Elliptic) \
-            + tp.plot.Points()
-    tp.render.renderSVG(g, fname="img/pointElliptic.svg")
-
-def pointColormap():
-    g = tp.plot.Graph(pos=df[["SepalLength", "SepalWidth"]]) \
-            + tp.plot.Points(size=df["PetalLength"], color=df["PetalWidth"])
-    tp.render.renderSVG(g, fname="img/pointColormap.svg")
-
-pointGroup()
-pointColormap()
-pointTransform()
-pointPolar()
-pointElliptic()

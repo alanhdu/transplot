@@ -27,11 +27,8 @@ class Graph(object):
         scaled_pos = transform.pos.scale(self.pos)
 
         if transform.pos.custom_axis:
+            plot = bk.figure(x_axis_type=None, y_axis_type=None)
             plot.grid.grid_line_color = None
-            plot.axis.axis_line_color = None
-            plot.axis.major_tick_line_color = None
-            plot.axis.minor_tick_line_color = None
-            plot.axis.major_label_text_color = None
 
             p1, p2 = scaled_pos.columns
             min, max = self.pos.min(), self.pos.max()
