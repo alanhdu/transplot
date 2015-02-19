@@ -1,74 +1,87 @@
 from collections import namedtuple
+from functools import partial
 
 import numpy as np
 import pandas as pd
 
 from . import util
 
-class Transform(namedtuple("Transform", ["pos", "color", "size"])):
-    def __new__(cls, pos=None, color=None, size=None):
-        return super(Transform, cls).__new__(cls, pos, color,size)
+class _Transform(object):
+    def __init__(self, graph, pos=None, color=None, size=None):
+        self.graph = graph
+        if pos is not None:
+            self.pos = pos(self.graph.pos)
+        else:
+            self.pos = None
+        if color is not None:
+            self.color = pos(self.graph.color)
+        else:
+            self.color = None
+        if size is not None:
+            self.size = size(self.graph.size)
+        else:
+            self.size = None
+
+def Transform(pos=None, color=None, size=None):
+    def _trans(graph):
+        return _Transform(graph, pos=pos, color=color, size=size)
+    return _trans
 
 class PosTransform(object):
-    @classmethod
-    def scale_1(cls, pos):
+    custom_axis = False
+    def __init__(self, pos):
+        pass
+    def scale(self, pos):
         return pos
-    @classmethod
-    def scale_2(cls, pos):
-        return pos
-    @classmethod
-    def point(cls, pos):
-        return pd.DataFrame({"x": cls.x(pos), "y": cls.y(pos)})
-    @classmethod
-    def x(cls, pos):
-        return pos[pos.columns[0]]
-    @classmethod
-    def y(cls, pos):
-        return pos[pos.columns[1]]
+    def point(self, scaled):
+        return pd.DataFrame({"x": scaled[scaled.columns[0]],
+                             "y": scaled[scaled.columns[1]]})
 
 identity = Transform(pos=PosTransform)
 
+
 class Polar(PosTransform):
-    @classmethod
-    def scale_2(cls, pos):
-        s = util._ScaleLinear(min=0, max=2*np.pi, data=pos)
-        return s.scaleData()
-    @staticmethod
-    def x(pos):
-        r = pos[pos.columns[0]]
-        theta = pos[pos.columns[1]]
-        return r * np.cos(theta)
-    @staticmethod
-    def y(pos):
-        r = pos[pos.columns[0]]
-        theta = pos[pos.columns[1]]
-        return r * np.sin(theta)
+    custom_axis = True
+    def __init__(self, pos):
+        self.pos = pos
+        self.scaler = util.LinearScaler(pos[pos.columns[1]], 0, 2 * np.pi)
+
+    def scale(self, pos):
+        pos = pos.copy()
+        pos[pos.columns[1]] = self.scaler.scale(pos[pos.columns[1]])
+        return pos
+
+    def point(self, scaled):
+        r = scaled[scaled.columns[0]]
+        theta = scaled[scaled.columns[1]]
+
+        ret =  pd.DataFrame({"x": r * np.cos(theta),
+                             "y": r * np.sin(theta)})
+        return ret
 
 class Parabolic(PosTransform):
-    @classmethod
-    def x(cls, pos):
-        tau = pos[pos.columns[0]]
-        sigma = pos[pos.columns[1]]
-        return tau * sigma
-    @classmethod
-    def y(cls, pos):
-        tau = pos[pos.columns[0]]
-        sigma = pos[pos.columns[1]]
-        return (tau * tau - sigma * sigma) / 2
+    custom_axis = True
+    def point(self, scaled):
+        tau = scaled[scaled.columns[0]]
+        sigma = scaled[scaled.columns[1]]
+
+        return pd.DataFrame({"x": tau * sigma,
+                             "y": (tau ** 2 - sigma ** 2) / 2})
 
 class Elliptic(PosTransform):
-    @classmethod
-    def scale_2(cls, pos):
-        s = util._ScaleLinear(min=0, max=2*np.pi, data=pos)
-        return s.scaleData()
+    custom_axis = True
+    def __init__(self, pos):
+        self.pos = pos
+        self.scaler = util.LinearScaler(pos[pos.columns[1]], 0, 2 * np.pi)
 
-    @classmethod
-    def x(cls, pos):
-        mu = pos[pos.columns[0]]
-        nu = pos[pos.columns[1]]
-        return np.cosh(mu) * np.cos(nu)
-    @classmethod
-    def y(cls, pos):
-        mu = pos[pos.columns[0]]
-        nu = pos[pos.columns[1]]
-        return np.sinh(mu) * np.sin(nu)
+    def scale(self, pos):
+        pos = pos.copy()
+        pos[pos.columns[1]] = self.scaler.scale(pos[pos.columns[1]])
+        return pos
+
+    def point(self, scaled):
+        mu = scaled[scaled.columns[0]]
+        nu = scaled[scaled.columns[1]]
+
+        return pd.DataFrame({"x": np.cosh(mu) * np.cos(nu),
+                             "y": np.sinh(mu) * np.sin(nu)})

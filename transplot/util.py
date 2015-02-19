@@ -1,32 +1,21 @@
 import numpy as np
 import pandas as pd
 
-def toPoint(df):
-    return zip(df.x.astype(int), 1000 - df.y.astype(int))
-
-class _ScaleLinear(object):
-    def __init__(self, min=0, max=1000, data=None):
-        self.data = data
+class LinearScaler(object):
+    def __init__(self, data, min=0, max=1000):
         self.min = min
         self.max = max
 
-        self.dataMin = data.min()
-        self.dataMax = data.max()
-    def scaleData(self):
-        min = self.dataMin
-        max = self.dataMax
-        if (min - max == 0).all():
-            df = pos.copy()
-            return self.min + df - df
-        else:
-            p = (self.data - min) / (max - min) # p in [0, 1]
-            return self.min + p * (self.max - self.min)
-    def scalePoint(self, point):
-        point = (point - self.dataMin) / (self.dataMax - self.dataMin)
-        return self.min + point * (self.max - self.min)
+        self.data_min = data.min()
+        self.data_max = data.max()
+
+    def scale(self, pos):
+        p = (pos - self.data_min) / (self.data_max - self.data_min)
+        return self.min + p * (self.max - self.min)
+
     @property
     def range(self):
-        return self.dataMin, self.dataMax
+        return self.data_min, self.data_max
 
 def _scaleArea(pos, min=8):
     if (pos.max() - pos.min() == 0).all():

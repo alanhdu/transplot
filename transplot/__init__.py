@@ -1,3 +1,3 @@
-from . import plot
-from . import transform
-from . import render
+from transplot.plot import *
+from transplot.transform import *
+from transplot.render import *
