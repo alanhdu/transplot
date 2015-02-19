@@ -1,21 +1,18 @@
 from __future__ import division
 import collections
-import itertools
-izip = itertools.izip
 
 import numpy as np
 import pandas as pd
 import seaborn as sns
 
-import plot
-import util
-
+from . import plot
+from . import util
 
 def _groupPalette(group):
     unique = group.data.unique()
     palette = sns.color_palette("husl", len(unique))
     p = {group : util._rgb2Hex(color)
-         for group, color in izip(unique, palette)}
+         for group, color in zip(unique, palette)}
     for group in group.data:
         yield p[group]
 def _groupColormap(data):
@@ -41,12 +38,10 @@ def renderSVG(graph, fname="test.svg"):
 
         scaler = util._ScaleLinear(data=pos, min=0, max=1000)
 
-        xmed, ymed = pos.median()
-        
         if isinstance(glyph, plot.Points):
             p1, p2 = pos.columns
-            pos.loc[:, p1] = transform.pos.scale_1(pos[p1])
-            pos.loc[:, p2] = transform.pos.scale_2(pos[p2])
+            pos[p1] = transform.pos.scale_1(pos[p1])
+            pos[p2] = transform.pos.scale_2(pos[p2])
 
             transformed = transform.pos.point(pos)
             min, max = pos.min(), pos.max()
@@ -87,7 +82,7 @@ def renderSVG(graph, fname="test.svg"):
             else:
                 color = _groupColormap(glyph.color)
 
-            for p, r, c in izip(pos, size, color):
+            for p, r, c in zip(pos, size, color):
                 dwg.add(dwg.circle(p, r=r, fill=c, stroke=c))
     dwg.save()
     return dwg

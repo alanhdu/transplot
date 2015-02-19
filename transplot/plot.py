@@ -3,7 +3,7 @@ from collections import namedtuple
 import blaze as bz
 import pandas as pd
 
-import transform
+from . import transform
 
 class Graph(object):
     def __init__(self, pos, color=None, size=10, transform=transform.identity, glyphs=()):
@@ -17,7 +17,6 @@ class Graph(object):
             return Graph(self.pos, self.color, self.size, self.transform, self.glyphs + (other,))
     def __radd(self, other):
         return self + other
-
     def __mul__(self, other):
         if isinstance(other, transform.Transform):
             return Graph(self.pos, self.color, self.size, other, self.glyphs)

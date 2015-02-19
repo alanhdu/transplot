@@ -3,12 +3,11 @@ from collections import namedtuple
 import numpy as np
 import pandas as pd
 
-import util
+from . import util
 
 class Transform(namedtuple("Transform", ["pos", "color", "size"])):
     def __new__(cls, pos=None, color=None, size=None):
         return super(Transform, cls).__new__(cls, pos, color,size)
-
 
 class PosTransform(object):
     @classmethod
