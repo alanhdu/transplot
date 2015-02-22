@@ -36,17 +36,17 @@ class Graph(object):
                 df = pd.DataFrame({p1: np.linspace(min[0], max[0], 50),
                                    p2: c2},
                                   columns=[p1, p2])
-                df = transform.pos.point(transform.pos.scale(df))
+                xs, ys = transform.pos.point(transform.pos.scale(df))
 
-                plot.line(df["x"], df["y"])
+                plot.line(xs, ys)
 
 
             for c1 in np.linspace(min[0], max[0], 6):
                 df = pd.DataFrame({p1: c1,
                                    p2: np.linspace(min[1], max[1], 50)},
                                    columns=[p1, p2])
-                df = transform.pos.point(transform.pos.scale(df))
-                plot.line(df["x"], df["y"])
+                xs, ys = transform.pos.point(transform.pos.scale(df))
+                plot.line(xs, ys)
 
         else:
             pass
@@ -61,5 +61,5 @@ class Glyph(object):
 
 class Point(Glyph):
     def render(self, plot, transform, pos):
-        pos = transform.pos.point(pos)
-        plot.scatter(pos["x"], pos["y"])
+        xs, ys = transform.pos.point(pos)
+        plot.scatter(xs, ys)

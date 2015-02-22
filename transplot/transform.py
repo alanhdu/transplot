@@ -4,7 +4,7 @@ from functools import partial
 import numpy as np
 import pandas as pd
 
-from . import util
+from .util import LinearScaler
 
 class _Transform(object):
     def __init__(self, graph, pos=None, color=None, size=None):
@@ -34,8 +34,7 @@ class PosTransform(object):
     def scale(self, pos):
         return pos
     def point(self, scaled):
-        return pd.DataFrame({"x": scaled[scaled.columns[0]],
-                             "y": scaled[scaled.columns[1]]})
+        return scaled[scaled.columns[0]], scaled[scaled.columns[1]]
 
 identity = Transform(pos=PosTransform)
 
@@ -44,7 +43,7 @@ class Polar(PosTransform):
     custom_axis = True
     def __init__(self, pos):
         self.pos = pos
-        self.scaler = util.LinearScaler(pos[pos.columns[1]], 0, 2 * np.pi)
+        self.scaler = LinearScaler(pos[pos.columns[1]], 0, 2 * np.pi)
 
     def scale(self, pos):
         pos = pos.copy()
@@ -52,12 +51,8 @@ class Polar(PosTransform):
         return pos
 
     def point(self, scaled):
-        r = scaled[scaled.columns[0]]
-        theta = scaled[scaled.columns[1]]
-
-        ret =  pd.DataFrame({"x": r * np.cos(theta),
-                             "y": r * np.sin(theta)})
-        return ret
+        r, theta = scaled[scaled.columns[0]], scaled[scaled.columns[1]] 
+        return r * np.cos(theta), r * np.sin(theta)
 
 class Parabolic(PosTransform):
     custom_axis = True
@@ -65,14 +60,13 @@ class Parabolic(PosTransform):
         tau = scaled[scaled.columns[0]]
         sigma = scaled[scaled.columns[1]]
 
-        return pd.DataFrame({"x": tau * sigma,
-                             "y": (tau ** 2 - sigma ** 2) / 2})
+        return tau * sigma, (tau ** 2 - sigma ** 2) / 2
 
 class Elliptic(PosTransform):
     custom_axis = True
     def __init__(self, pos):
         self.pos = pos
-        self.scaler = util.LinearScaler(pos[pos.columns[1]], 0, 2 * np.pi)
+        self.scaler = LinearScaler(pos[pos.columns[1]], 0, 2 * np.pi)
 
     def scale(self, pos):
         pos = pos.copy()
@@ -83,5 +77,4 @@ class Elliptic(PosTransform):
         mu = scaled[scaled.columns[0]]
         nu = scaled[scaled.columns[1]]
 
-        return pd.DataFrame({"x": np.cosh(mu) * np.cos(nu),
-                             "y": np.sinh(mu) * np.sin(nu)})
+        return np.cosh(mu) * np.cos(nu), np.sinh(mu) * np.sin(nu)
