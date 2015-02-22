@@ -21,6 +21,22 @@ class Graph(object):
             return Graph(self.pos, self.color, self.size, self.transform, self.glyphs + (other,))
     def __radd(self, other):
         return self + other
+    def custom_grid(self, plot, transform):
+        min, max = self.pos.min(), self.pos.max()
+        # pass in columns to preserve order
+        df = pd.DataFrame({col: np.linspace(min[i], max[i], 50)
+                           for i, col in enumerate(self.pos.columns)},
+                          columns=self.pos.columns)
+
+        for dim in range(len(min)):
+            for c in np.linspace(min[dim], max[dim], 6):
+                df[df.columns[dim]] = c
+                xs, ys = transform.pos.point(transform.pos.scale(df))
+                plot.line(xs, ys)
+
+            # reset change
+            df[df.columns[dim]] = np.linspace(min[dim], max[dim], 50)
+
     def render(self):
         plot = bk.figure()
         transform = self.transform(self)
@@ -30,24 +46,7 @@ class Graph(object):
             plot = bk.figure(x_axis_type=None, y_axis_type=None)
             plot.grid.grid_line_color = None
 
-            p1, p2 = scaled_pos.columns
-            min, max = self.pos.min(), self.pos.max()
-            for c2 in np.linspace(min[1], max[1], 6):
-                df = pd.DataFrame({p1: np.linspace(min[0], max[0], 50),
-                                   p2: c2},
-                                  columns=[p1, p2])
-                xs, ys = transform.pos.point(transform.pos.scale(df))
-
-                plot.line(xs, ys)
-
-
-            for c1 in np.linspace(min[0], max[0], 6):
-                df = pd.DataFrame({p1: c1,
-                                   p2: np.linspace(min[1], max[1], 50)},
-                                   columns=[p1, p2])
-                xs, ys = transform.pos.point(transform.pos.scale(df))
-                plot.line(xs, ys)
-
+            self.custom_grid(plot, transform)
         else:
             pass
 
