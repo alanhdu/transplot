@@ -29,4 +29,8 @@ def husl_palette(n_colors=6, h=.01, s=.9, l=.65):
     hues = 359 * (hues % 1)
     s *= 99
     l *= 99
-    return [husl.husl_to_rgb(h_i, s, l) for h_i in hues]
+    return [rgb_to_hex(husl.husl_to_rgb(h_i, s, l)) for h_i in hues]
+
+def rgb_to_hex(color):
+    r, g, b = color
+    return "#{:02x}{:02x}{:02x}".format(int(255*r), int(255*g), int(255*b))

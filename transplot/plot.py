@@ -5,6 +5,7 @@ import pandas as pd
 import bokeh.plotting as bk
 
 from . import transform
+from . import palette
 
 class Graph(object):
     def __init__(self, data, pos, color=None, size=None, 
@@ -68,12 +69,15 @@ class Glyph(object):
 
 class Point(Glyph):
     def render(self, plot, transform, pos, colors):
-        categorical = isinstance(colors, pd.Categorical)
-        string = colors.dtype in {np.dtype(object), np.dtype(str), np.dtype(bytes)}
-        if categorical or string:
-            pass
-        else:
-            pass
-
         xs, ys = pos
-        plot.scatter(xs, ys)
+
+        categoricals = {np.dtype(object), np.dtype(str), np.dtype(bytes),
+                        pd.Categorical(None).dtype}
+        if colors.dtype in categoricals:
+            unique = colors.unique()
+            pal = palette.husl_palette(len(unique))
+            for color, val in zip(pal, unique):
+                u = colors == val
+                plot.scatter(xs[u], ys[u], color=color, size=8)
+        else:
+            plot.circle(xs, ys, size=8)
