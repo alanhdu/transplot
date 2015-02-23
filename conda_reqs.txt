@@ -1,0 +1,35 @@
+# This file may be used to create an environment using:
+# $ conda create --name <env> --file <this file>
+# platform: linux-64
+bokeh=0.8.0=np19py34_0
+colorama=0.3.3=py34_0
+dateutil=2.1=py34_2
+flask=0.10.1=py34_1
+greenlet=0.4.5=py34_0
+itsdangerous=0.24=py34_0
+jinja2=2.7.3=py34_1
+libsodium=0.4.5=0
+markupsafe=0.23=py34_0
+numpy=1.9.1=py34_0
+openssl=1.0.1k=0
+pandas=0.15.2=np19py34_0
+pip=6.0.8=py34_0
+pygments=2.0.2=py34_0
+python=3.4.2=0
+pytz=2014.9=py34_0
+pyyaml=3.11=py34_0
+pyzmq=14.5.0=py34_0
+readline=6.2=2
+requests=2.5.1=py34_0
+scipy=0.15.1=np19py34_0
+setuptools=12.2=py34_0
+six=1.9.0=py34_0
+sqlite=3.8.4.1=0
+system=5.8=1
+tk=8.5.15=0
+tornado=4.1=py34_0
+werkzeug=0.10.1=py34_0
+xz=5.0.5=0
+yaml=0.1.4=0
+zeromq=4.0.4=0
+zlib=1.2.8=0
