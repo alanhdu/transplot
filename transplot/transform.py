@@ -7,25 +7,16 @@ import pandas as pd
 from .util import LinearScaler
 
 class _Transform(object):
-    def __init__(self, graph, pos=None, color=None, size=None):
+    def __init__(self, graph, pos, color, size=None):
         self.graph = graph
-        if pos is not None:
-            self.pos = pos(self.graph.pos)
-        else:
-            self.pos = None
-        if color is not None:
-            self.color = pos(self.graph.color)
-        else:
-            self.color = None
+        self.pos = pos(self.graph.pos)
+        self.color = color(self.graph.color)
+
         if size is not None:
             self.size = size(self.graph.size)
         else:
             self.size = None
 
-def Transform(pos=None, color=None, size=None):
-    def _trans(graph):
-        return _Transform(graph, pos=pos, color=color, size=size)
-    return _trans
 
 class PosTransform(object):
     custom_axis = False
@@ -36,8 +27,20 @@ class PosTransform(object):
     def point(self, scaled):
         return scaled[scaled.columns[0]], scaled[scaled.columns[1]]
 
-identity = Transform(pos=PosTransform)
+class ColorTransform(object):
+    def __init__(self, color):
+        pass
+    def scale(self, color):
+        return color
+    def color(self, scaled):
+        return scaled[scaled.columns[0]]
 
+def Transform(pos=PosTransform, color=ColorTransform, size=None):
+    def _trans(graph):
+        return _Transform(graph, pos=pos, color=color, size=size)
+    return _trans
+
+identity = Transform()
 
 class Polar(PosTransform):
     custom_axis = True
